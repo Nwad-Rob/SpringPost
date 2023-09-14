@@ -1,6 +1,7 @@
 package com.springpost.project.model;
 
-import java.net.URL;
+import java.net.URI;
+
 import java.util.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,10 +41,38 @@ public class ProductResource {
     public ResponseEntity<Object> createProduct(@RequestBody Product product){
        Product savedProduct = prodRep.save(product);
 
-       URL location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
+       URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
 				.buildAndExpand(savedProduct.getProductId()).toUri();
 
 		return ResponseEntity.created(location).build();
     }
 
+    @PutMapping("/products/{id}")
+	public ResponseEntity<Object> updateStudent(@RequestBody Product product, @PathVariable long productId) {
+
+		Optional<Product> productOptional = prodRep.findById(productId);
+
+		if (!productOptional.isPresent())
+			return ResponseEntity.notFound().build();
+
+		product.setProductId(productId);
+		
+		prodRep.save(product);
+
+		return ResponseEntity.noContent().build();
+	}
+
+	@GetMapping("/productDetails/{name}")
+	public ResponseEntity<List<Product>> findData(@PathVariable ("productName") String value){
+		List<Product> productList = prodRep.findByName(value);
+		return ResponseEntity.ok(productList);
+	}
+
+    @GetMapping("/productDetails/{price}")
+    public ResponseEntity <List<Product>> findPrice(@PathVariable ("productPrice") double value){
+        List<Product> productList = prodRep.findAllOrderByProductPriceAsc(value);
+        return ResponseEntity.ok(productList);
+    }
 }
+
+
